@@ -4,9 +4,9 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2025-10-24T20:50:00Z",
+    "exported_at": "2025-10-24T20:55:00Z",
     "name": "MTA:SA - Orbit Framework Roleplay",
-    "author": "zaton318@gmail.com",
+    "author": "zaton318@example.com", // Replace with your actual email
     "description": "MTA:SA server with Orbit Framework (CZ/SK roleplay gamemode based on OWL Gaming). Installs latest Orbit via git clone.",
     "features": ["mysql"],
     "docker_images": {
@@ -14,27 +14,9 @@
     },
     "startup": "/entrypoint.sh",
     "config": {
-        "files": {
-            "mods/deathmatch/mtaserver.conf": {
-                "parser": "props",
-                "find": {
-                    "servername": "{{server.build.env.SERVER_NAME}}",
-                    "maxplayers": "{{server.build.env.MAX_PLAYERS}}",
-                    "password": "{{server.build.env.PASSWORD}}",
-                    "dbhost": "{{server.build.env.DB_HOST}}",
-                    "dbuser": "{{server.build.env.DB_USER}}",
-                    "dbpass": "{{server.build.env.DB_PASS}}",
-                    "dbname": "{{server.build.env.DB_NAME}}"
-                }
-            }
-        },
-        "startup": {
-            "done": "Server started and is ready to accept connections!"
-        },
-        "logs": {
-            "custom": true,
-            "location": "logs/mta-server.log"
-        },
+        "files": "{\"mods/deathmatch/mtaserver.conf\":{\"parser\":\"props\",\"find\":{\"servername\":\"{{server.build.env.SERVER_NAME}}\",\"maxplayers\":\"{{server.build.env.MAX_PLAYERS}}\",\"password\":\"{{server.build.env.PASSWORD}}\",\"dbhost\":\"{{server.build.env.DB_HOST}}\",\"dbuser\":\"{{server.build.env.DB_USER}}\",\"dbpass\":\"{{server.build.env.DB_PASS}}\",\"dbname\":\"{{server.build.env.DB_NAME}}\"}}}",
+        "startup": "{\"done\":\"Server started and is ready to accept connections!\"}",
+        "logs": "{\"custom\":true,\"location\":\"logs/mta-server.log\"}",
         "stop": "^C"
     },
     "scripts": {
