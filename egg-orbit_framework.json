@@ -6,7 +6,7 @@
     },
     "exported_at": "2025-10-24T20:55:00Z",
     "name": "MTA:SA - Orbit Framework Roleplay",
-    "author": "zaton318@example.com", // Replace with your actual email
+    "author": "zaton318@example.com", 
     "description": "MTA:SA server with Orbit Framework (CZ/SK roleplay gamemode based on OWL Gaming). Installs latest Orbit via git clone.",
     "features": ["mysql"],
     "docker_images": {
