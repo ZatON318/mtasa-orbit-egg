@@ -1,0 +1,108 @@
+{
+    "_comment": "MTA:SA with Orbit Framework for Pterodactyl",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-10-24T20:38:00Z",
+    "name": "MTA:SA - Orbit Framework Roleplay",
+    "author": "ZatON318",
+    "description": "MTA:SA server with Orbit Framework (CZ/SK roleplay gamemode based on OWL Gaming). Installs latest Orbit via git clone on server creation. Requires MySQL database with SQL schema import.",
+    "features": ["mysql"],
+    "docker_images": {
+        "1.0": "ghcr.io/zaton318/mtasa-server:latest"
+    },
+    "file_denylist": [],
+    "startup": "/entrypoint.sh",
+    "config": {
+        "files": {
+            "mods/deathmatch/mtaserver.conf": {
+                "parser": "xml",
+                "find": {
+                    "servername": "{{server.build.env.SERVER_NAME}}",
+                    "maxplayers": "{{server.build.env.MAX_PLAYERS}}",
+                    "password": "{{server.build.env.PASSWORD}}",
+                    "dbhost": "{{server.build.env.DB_HOST}}",
+                    "dbuser": "{{server.build.env.DB_USER}}",
+                    "dbpass": "{{server.build.env.DB_PASS}}",
+                    "dbname": "{{server.build.env.DB_NAME}}"
+                }
+            }
+        },
+        "startup": "{{docker_images[1.0]}}",
+        "logs": {},
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -e\n\n# Ensure permissions\nchown -R container:container /mnt/server\n\n# Create directory structure\nmkdir -p /mnt/server/mods/deathmatch/resources\n\n# Copy base configs/resources from image if missing\nif [ ! -f /mnt/server/mods/deathmatch/mtaserver.conf ]; then\n    cp -r /opt/multitheftauto_linux_x64/mods/deathmatch/* /mnt/server/mods/deathmatch/\n    chown -R container:container /mnt/server/mods/deathmatch\nfi\n\n# Install Orbit Framework (latest from GitHub)\ncd /mnt/server/mods/deathmatch/resources\nrm -rf orbit  # Remove old if exists\ngit clone https://github.com/ZatON318/orbit_framework.git orbit\ngit -C orbit pull origin main  # Ensure latest\nchown -R container:container orbit\n\n# Set gamemode in mtaserver.conf (append if missing)\nif ! grep -q 'gamemode.*orbit' /mnt/server/mods/deathmatch/mtaserver.conf; then\n    sed -i '/<settings>/a\\    <setting name=\"gamemode\" value=\"orbit\" comment=\"Orbit Framework RP Gamemode\" />' /mnt/server/mods/deathmatch/mtaserver.conf\nfi\n\n# Create README for post-install steps\ncat << EOF > /mnt/server/mods/deathmatch/README_ORBIT.txt\nOrbit Framework installed!\n1. Import Orbit SQL schema to MySQL DB (check /resources/orbit/data or https://github.com/ZatON318/orbit_framework for SQL files).\n2. Edit acl.xml in File Manager for custom access.\n3. Update Orbit: File Manager > cd resources/orbit && git pull\nEOF\n\n# Signal completion\necho 'Setup complete. Server starting with Orbit Framework.'\npkill -f mta-server64 || true",
+            "container": "bash",
+            "entrypoint": "false"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Name",
+            "description": "Name of your MTA:SA server.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "Orbit RP Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|between:1,50"
+        },
+        {
+            "name": "Max Players",
+            "description": "Maximum number of players.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "32",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1|max:1000"
+        },
+        {
+            "name": "Server Password",
+            "description": "Optional server password.",
+            "env_variable": "PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|between:0,20"
+        },
+        {
+            "name": "Database Host",
+            "description": "MySQL host for Orbit Framework.",
+            "env_variable": "DB_HOST",
+            "default_value": "{{allocations.primary.database_host}}",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Database User",
+            "description": "MySQL username for Orbit Framework.",
+            "env_variable": "DB_USER",
+            "default_value": "{{allocations.primary.database_user}}",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Database Password",
+            "description": "MySQL password for Orbit Framework.",
+            "env_variable": "DB_PASS",
+            "default_value": "{{allocations.primary.database_password}}",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Database Name",
+            "description": "MySQL database name for Orbit Framework.",
+            "env_variable": "DB_NAME",
+            "default_value": "{{allocations.primary.database}}",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        }
+    ]
+}
