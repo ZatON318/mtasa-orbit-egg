@@ -4,20 +4,19 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2025-10-24T20:38:00Z",
+    "exported_at": "2025-10-24T20:50:00Z",
     "name": "MTA:SA - Orbit Framework Roleplay",
-    "author": "ZatON318",
-    "description": "MTA:SA server with Orbit Framework (CZ/SK roleplay gamemode based on OWL Gaming). Installs latest Orbit via git clone on server creation. Requires MySQL database with SQL schema import.",
+    "author": "zaton318@gmail.com",
+    "description": "MTA:SA server with Orbit Framework (CZ/SK roleplay gamemode based on OWL Gaming). Installs latest Orbit via git clone.",
     "features": ["mysql"],
     "docker_images": {
-        "1.0": "ghcr.io/zaton318/mtasa-server:latest"
+        "1.0": "ghcr.io/ZatON318/mtasa-server:latest"
     },
-    "file_denylist": [],
     "startup": "/entrypoint.sh",
     "config": {
         "files": {
             "mods/deathmatch/mtaserver.conf": {
-                "parser": "xml",
+                "parser": "props",
                 "find": {
                     "servername": "{{server.build.env.SERVER_NAME}}",
                     "maxplayers": "{{server.build.env.MAX_PLAYERS}}",
@@ -29,15 +28,20 @@
                 }
             }
         },
-        "startup": "{{docker_images[1.0]}}",
-        "logs": {},
+        "startup": {
+            "done": "Server started and is ready to accept connections!"
+        },
+        "logs": {
+            "custom": true,
+            "location": "logs/mta-server.log"
+        },
         "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\nset -e\n\n# Ensure permissions\nchown -R container:container /mnt/server\n\n# Create directory structure\nmkdir -p /mnt/server/mods/deathmatch/resources\n\n# Copy base configs/resources from image if missing\nif [ ! -f /mnt/server/mods/deathmatch/mtaserver.conf ]; then\n    cp -r /opt/multitheftauto_linux_x64/mods/deathmatch/* /mnt/server/mods/deathmatch/\n    chown -R container:container /mnt/server/mods/deathmatch\nfi\n\n# Install Orbit Framework (latest from GitHub)\ncd /mnt/server/mods/deathmatch/resources\nrm -rf orbit  # Remove old if exists\ngit clone https://github.com/ZatON318/orbit_framework.git orbit\ngit -C orbit pull origin main  # Ensure latest\nchown -R container:container orbit\n\n# Set gamemode in mtaserver.conf (append if missing)\nif ! grep -q 'gamemode.*orbit' /mnt/server/mods/deathmatch/mtaserver.conf; then\n    sed -i '/<settings>/a\\    <setting name=\"gamemode\" value=\"orbit\" comment=\"Orbit Framework RP Gamemode\" />' /mnt/server/mods/deathmatch/mtaserver.conf\nfi\n\n# Create README for post-install steps\ncat << EOF > /mnt/server/mods/deathmatch/README_ORBIT.txt\nOrbit Framework installed!\n1. Import Orbit SQL schema to MySQL DB (check /resources/orbit/data or https://github.com/ZatON318/orbit_framework for SQL files).\n2. Edit acl.xml in File Manager for custom access.\n3. Update Orbit: File Manager > cd resources/orbit && git pull\nEOF\n\n# Signal completion\necho 'Setup complete. Server starting with Orbit Framework.'\npkill -f mta-server64 || true",
+            "script": "#!/bin/bash\nset -e\n\n# Ensure permissions\nchown -R container:container /mnt/server\n\n# Create directory structure\nmkdir -p /mnt/server/mods/deathmatch/resources\n\n# Copy base configs/resources from image if missing\nif [ ! -f /mnt/server/mods/deathmatch/mtaserver.conf ]; then\n    cp -r /opt/multitheftauto_linux_x64/mods/deathmatch/* /mnt/server/mods/deathmatch/\n    chown -R container:container /mnt/server/mods/deathmatch\nfi\n\n# Install Orbit Framework\ncd /mnt/server/mods/deathmatch/resources\nrm -rf orbit\ngit clone https://github.com/ZatON318/orbit_framework.git orbit\ngit -C orbit pull origin main\nchown -R container:container orbit\n\n# Set gamemode\nif ! grep -q 'gamemode.*orbit' /mnt/server/mods/deathmatch/mtaserver.conf; then\n    sed -i '/<settings>/a\\    <setting name=\"gamemode\" value=\"orbit\" comment=\"Orbit Framework RP Gamemode\" />' /mnt/server/mods/deathmatch/mtaserver.conf\nfi\n\n# README\ncat << EOF > /mnt/server/mods/deathmatch/README_ORBIT.txt\nOrbit Framework installed!\n1. Import Orbit SQL schema to MySQL DB (check /resources/orbit/data or https://github.com/ZatON318/orbit_framework).\n2. Edit acl.xml in File Manager for custom access.\n3. Update Orbit: File Manager > cd resources/orbit && git pull\nEOF\n\n# Signal completion\necho 'Setup complete. Server starting with Orbit Framework.'\npkill -f mta-server64 || true",
             "container": "bash",
-            "entrypoint": "false"
+            "entrypoint": false
         }
     },
     "variables": [
